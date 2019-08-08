@@ -3,5 +3,3 @@ config_dump/
 test.config
 __pycache__/
 ASA.pyc
-SRX.pyc
-SRX.pyc

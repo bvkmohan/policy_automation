@@ -7,6 +7,10 @@ class SRXConfig:
     def append_interface(self, interface_object):
         self.interfaces.append(interface_object)
 
+    def show_interfaces(self):
+        for interface in self.interfaces:
+            print(" > " + str(interface))
+
 
 class Interface:
     def __init__(self):
@@ -18,6 +22,9 @@ class Interface:
         self.interface = interface
         self.unit = unit
         self.address = address
+
+
+srx_config = None
 
 
 def run(config):
@@ -39,3 +46,5 @@ def run(config):
                 interface.add_interface(line[2], line[4], line[8])
                 srx_config.append_interface(interface)
 
+
+srx_config.show_interfaces()
