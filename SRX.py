@@ -7,9 +7,13 @@ class SRXConfig:
     def append_interface(self, interface_object):
         self.interfaces.append(interface_object)
 
-    def show_interfaces(self):
+    def dump_interfaces(self):
+        print(" ")
         for interface in self.interfaces:
-            print(" > " + str(interface))
+            print(" Interface Name    : " + str(interface.interface))
+            print(" Interface Unit    : " + str(interface.unit))
+            print(" Interface Address : " + str(interface.address))
+            print(" ")
 
 
 class Interface:
@@ -24,15 +28,21 @@ class Interface:
         self.address = address
 
 
-srx_config = None
+srx_config = SRXConfig()
 
 
 def run(config):
     flag = None
-    srx_config = SRXConfig()
     for row in config:
         rm_nl = row.replace("\n", "")
         line = rm_nl.split(" ")
+
+        if len(line) < 2:
+            continue
+
+        if line[1] == "groups":
+            del line[1]
+            del line[1]
 
         if len(line) < 2:
             continue
@@ -43,8 +53,8 @@ def run(config):
         if flag == "interfaces" and len(line) > 8:
             if line[5] == "family" and line[6] == "inet" and line[7] == "address":
                 interface = Interface()
+                # print(" > " + line[2] + " > " + line[4] + " > " + line[8])
                 interface.add_interface(line[2], line[4], line[8])
                 srx_config.append_interface(interface)
 
-
-srx_config.show_interfaces()
+    return srx_config
