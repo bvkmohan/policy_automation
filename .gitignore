@@ -1,3 +1,6 @@
 .vscode/settings.json
 config_dump/
 test.config
+__pycache__/
+SRX.pyc
+ASA.pyc
