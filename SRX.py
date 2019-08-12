@@ -16,21 +16,27 @@ class SRXConfig:
             print(" Interface Status  : " + str(interface.status))
             print(" ")
 
+    def check_interface(self, interface, unit):
+        if len(self.interfaces) > 0:
+            for interface in self.interfaces:
+                if interface.interface == interface and interface.unit == unit:
+                    return True
+                else:
+                    False
+
 
 class Interface:
-    def __init__(self):
-        self.interface = None
-        self.unit = None
+    def __init__(self, interface, unit):
+        self.interface = interface
+        self.unit = unit
         self.address = None
         self.status = None
 
-    def add_interface(self, interface, unit, address):
-        self.interface = interface
-        self.unit = unit
+    def add_interface(self, address):
         self.address = address
         self.status = "enabled"
 
-    def disable_interface(self, interface, unit):
+    def disable_interface(self):
         if self.status is None:
             self.status = "disabled"  # ANCHOR
 
@@ -56,22 +62,23 @@ def run(config):
 
         if line[1] == "interfaces":
             flag = line[1]
+            if srx_config.check_interface(line)
+            interface = Interface(line[2], line[4])
 
         if flag == "interfaces":
             if len(line) > 8:
                 if line[5] == "family" and line[6] == "inet" and line[7] == "address":
-                    interface = Interface()
-                    # print(" > " + line[2] + " > " + line[4] + " > " + line[8])
-                    interface.add_interface(line[2], line[4], line[8])
+                    # print(" > " + line[4] + " > " + line[8])
+                    interface.add_interface(line[8])
                     srx_config.append_interface(interface)
             if (
                 line[0] == "deactivate" and line[1] == "interfaces"
             ):  # DELETE LINE[1] IN FUTURE
-                interface.disable_interface(line[2], line[4])
+                interface.disable_interface()
             if (
                 line[-1] == "disable" and line[1] == "interfaces"
             ):  # DELETE LINE[1] IN FUTURE
                 if len(line) != 4:
-                    interface.disable_interface(line[2], line[4])
+                    interface.disable_interface()
 
     return srx_config
