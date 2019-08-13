@@ -22,19 +22,20 @@ class SRXConfig:
                 if interface.interface == interface and interface.unit == unit:
                     return True
                 else:
-                    False
+                    return False
+        else:
+            return False
 
 
 class Interface:
-    def __init__(self, interface, unit):
+    def __init__(self, interface, unit, status):
         self.interface = interface
         self.unit = unit
         self.address = None
-        self.status = None
+        self.status = status
 
     def add_interface(self, address):
         self.address = address
-        self.status = "enabled"
 
     def disable_interface(self):
         if self.status is None:
@@ -61,9 +62,13 @@ def run(config):
             continue
 
         if line[1] == "interfaces":
-            flag = line[1]
-            if srx_config.check_interface(line)
-            interface = Interface(line[2], line[4])
+            if len(line) > 4:
+                flag = line[1]
+                if srx_config.check_interface(line[2], line[4]) is not True:
+                    if line[-1] == "disable":
+                        interface = Interface(line[2], line[4], "disabled")
+                    else:
+                        interface = Interface(line[2], line[4], "enabled")
 
         if flag == "interfaces":
             if len(line) > 8:
