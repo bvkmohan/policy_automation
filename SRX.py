@@ -54,9 +54,9 @@ class Interface:
     def get_address_primary(self):
         return self.address_primary
 
-    def disable_interface(self):
+    def change_interface_status(self, status):
         if self.status is None:
-            self.status = "disabled"
+            self.status = status
 
 
 srx_config = SRXConfig()
@@ -78,29 +78,29 @@ def run(config):
             continue
 
         if line[1] == "interfaces":
-            if line[3] == "description":
-                continue
-            if len(line) > 4 and line[-1] == "disable":
-                interface = Interface(line[2], line[4], "disabled")
-                srx_config.append_interface(interface)
-                continue
-            if len(line) > 8:
-                if line[5] == "family" and line[6] == "inet" and line[7] == "address":
-                    print(str(srx_config.check_interface(line[2], line[4])))
-                    if srx_config.check_interface(line[2], line[4]) is False:
-                        interface = Interface(line[2], line[4], "enabled")
-                        interface.add_address_primary(line[8])
+
+            if line[3] == "unit":
+                if srx_config.check_interface(line[2], line[4]) is False:
+                    if line[-1] == "disable":
+                        interface = Interface(line[2], line[4], "disabled")
                         srx_config.append_interface(interface)
                         continue
                     else:
-                        if interface.has_address_primary is True:
-                            if line[-1] == "primary" or line[-1] == "master-only":
-                                interface.add_address_secondary(
-                                    interface.get_address_primary()
-                                )
-                                interface.add_address_primary(line[8])
-                        else:
-                            interface.add_address_primary(line[8])
+                        interface = Interface(line[2], line[4], "enabled")
+                        srx_config.append_interface(interface)
                         continue
+                else:
+                    if line[-1] == "disable":
+                        interface.change_interface_status("disabled")
+
+            if line[6] == "inet" and line[7] == "address":
+                if interface.has_address_primary() is False:
+                    interface.add_address_primary(line[8])
+                else:
+                    if line[-1] == "primary" or line[-1] == "master-only":
+                        interface.add_address_secondary(interface.get_address_primary())
+                        interface.add_address_primary(line[8])
+                    else:
+                        interface.add_address_secondary(line[8])
 
     return srx_config
