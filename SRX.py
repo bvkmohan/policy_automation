@@ -19,15 +19,20 @@ class SRXConfig:
             print(" ")
 
     def check_interface(self, interface, unit):
-        print(" I GOT : " + interface + " AND " + unit)
+        print(" ")
+        print(" 1> " + interface + " - " + unit + " <")
         if len(self.interfaces) > 0:
             for interface in self.interfaces:
+                print(" 2> " + interface.interface + " - " + interface.unit + " < ")
                 if interface.interface == interface and interface.unit == unit:
+                    print("  RETURNING TRUE")
                     return True
                 else:
+                    print("  RETURNING FALSE 1 ")
                     return False
         else:
             print(" INTERFACES NOT YET ADDED")
+            print("  RETURNING FALSE 2 ")
             return False
 
 
@@ -63,6 +68,7 @@ srx_config = SRXConfig()
 
 
 def run(config):
+
     for row in config:
         rm_nl = row.replace("\n", "")
         line = rm_nl.split(" ")
@@ -77,6 +83,7 @@ def run(config):
         if len(line) < 2:
             continue
 
+        print(" >> " + str(line) + " << ")
         if line[1] == "interfaces":
 
             if line[3] == "unit":
