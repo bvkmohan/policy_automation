@@ -21,23 +21,23 @@ class SRXConfig:
     def check_interface(self, interface, unit):
         self.interface_ = interface
         self.unit_ = unit
-        print(" ")
-        print(" 1> " + self.interface_ + " - " + self.unit_ + " <")
+        # print(" ")
+        # print(" 1> " + self.interface_ + " - " + self.unit_ + " <")
         if len(self.interfaces) > 0:
             for interface in self.interfaces:
-                print(" 2> " + interface.interface + " - " + interface.unit + " < ")
+                # print(" 2> " + interface.interface + " - " + interface.unit + " < ")
                 if (
                     interface.interface == self.interface_
                     and interface.unit == self.unit_
                 ):
-                    print("  RETURNING TRUE")
+                    # print("  RETURNING TRUE")
                     return True
             else:
-                print(" RETURNING FALSE 1 ")
+                # print(" RETURNING FALSE 1 ")
                 return False
         else:
-            print(" INTERFACES NOT YET ADDED")
-            print("  RETURNING FALSE 2 ")
+            # print(" INTERFACES NOT YET ADDED")
+            # print("  RETURNING FALSE 2 ")
             return False
 
 
