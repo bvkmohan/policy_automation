@@ -19,17 +19,22 @@ class SRXConfig:
             print(" ")
 
     def check_interface(self, interface, unit):
+        self.interface_ = interface
+        self.unit_ = unit
         print(" ")
-        print(" 1> " + interface + " - " + unit + " <")
+        print(" 1> " + self.interface_ + " - " + self.unit_ + " <")
         if len(self.interfaces) > 0:
             for interface in self.interfaces:
                 print(" 2> " + interface.interface + " - " + interface.unit + " < ")
-                if interface.interface == interface and interface.unit == unit:
+                if (
+                    interface.interface == self.interface_
+                    and interface.unit == self.unit_
+                ):
                     print("  RETURNING TRUE")
                     return True
-                else:
-                    print("  RETURNING FALSE 1 ")
-                    return False
+            else:
+                print(" RETURNING FALSE 1 ")
+                return False
         else:
             print(" INTERFACES NOT YET ADDED")
             print("  RETURNING FALSE 2 ")
@@ -60,7 +65,7 @@ class Interface:
         return self.address_primary
 
     def change_interface_status(self, status):
-        if self.status is None:
+        if self.status is None or self.status == "enabled":
             self.status = status
 
 
@@ -86,6 +91,26 @@ def run(config):
         print(" >> " + str(line) + " << ")
         if line[1] == "interfaces":
 
+            if len(line) <= 5:
+                continue
+
+            if (
+                line[3] == "speed"
+                or line[3] == "mtu"
+                or line[3] == "link-mode"
+                or line[3] == "description"
+                or line[3] == "gigether-options"
+                or line[3] == "fabric-options"
+                or line[3] == "per-unit-scheduler"
+                or line[3] == "vlan-tagging"
+                or line[3] == "redundant-ether-options"
+                or line[3] == "redundant-pseudo-interface-options"
+                or line[3] == "no-traps"
+                or line[-1] == "no-traps"
+                or line[-1] == "point-to-point"
+            ):
+                continue
+
             if line[3] == "unit":
                 if srx_config.check_interface(line[2], line[4]) is False:
                     if line[-1] == "disable":
@@ -93,13 +118,32 @@ def run(config):
                         srx_config.append_interface(interface)
                         continue
                     else:
-                        interface = Interface(line[2], line[4], "enabled")
-                        srx_config.append_interface(interface)
-                        continue
+                        if line[-1] == "enable":
+                            interface = Interface(line[2], line[4], "enabled")
+                            srx_config.append_interface(interface)
+                            continue
+                        if line[6] == "inet" and line[-1] == "inet":
+                            interface = Interface(line[2], line[4], "enabled")
+                            srx_config.append_interface(interface)
+                            continue
+                        if line[6] == "inet" and line[7] == "address":
+                            interface = Interface(line[2], line[4], "enabled")
+                            srx_config.append_interface(interface)
+                            interface.add_address_primary(line[8])
+                            continue
+                        else:
+                            interface = Interface(line[2], line[4], "enabled")
+                            srx_config.append_interface(interface)
+                            continue
                 else:
                     if line[-1] == "disable":
                         interface.change_interface_status("disabled")
+                        continue
+                    if line[-1] == "inet":
+                        continue
 
+            if line[6] == "inet" and line[7] == "filter":
+                continue
             if line[6] == "inet" and line[7] == "address":
                 if interface.has_address_primary() is False:
                     interface.add_address_primary(line[8])
