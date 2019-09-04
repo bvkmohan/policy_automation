@@ -3,6 +3,9 @@ class SRXConfig:
         self.hostname = None
         self.version = None
         self.interfaces = []
+        self.zones = []
+
+    # 1 # INTERFACES #
 
     def append_interface(self, interface_object):
         self.interfaces.append(interface_object)
@@ -40,6 +43,30 @@ class SRXConfig:
             # print("  RETURNING FALSE 2 ")
             return False
 
+    # 2 # SECURITY ZONES #
+
+    def append_zone(self, zone_name):
+        self.zones.append(zone_name)
+
+    def dump_zones(self):
+        print(" ")
+        for zone in self.zones:
+            print(" ")
+            print(" Zone Name : " + str(zone.name))
+            for interface in zone.interfaces:
+                print("  - " + str(interface))
+
+    def check_zone(self, name):
+        self.name_ = name
+        if len(self.zones) > 0:
+            for zone in self.zones:
+                if zone.name == self.name_:
+                    return True
+            else:
+                return False
+        else:
+            return False
+
 
 class Interface:
     def __init__(self, interface, unit, status):
@@ -69,6 +96,28 @@ class Interface:
             self.status = status
 
 
+class SECZone:
+    def __init__(self, name):
+        self.name = name
+        self.interfaces = []
+        # self.inbound_services = []
+        # self.screens = []
+
+    def add_interface(self, interface):
+        self.interfaces.append(interface)
+
+    # def add_inbound_service(self, service):
+    # self.inbound_services.append(service)
+
+    def check_interface(self, interface):
+        self.interface_ = interface
+        for intf in self.interfaces:
+            if self.interface_ == intf:
+                return True
+        else:
+            return False
+
+
 srx_config = SRXConfig()
 
 
@@ -88,7 +137,6 @@ def run(config):
         if len(line) < 2:
             continue
 
-        print(" >> " + str(line) + " << ")
         if line[1] == "interfaces":
 
             if len(line) <= 5:
@@ -153,5 +201,19 @@ def run(config):
                         interface.add_address_primary(line[8])
                     else:
                         interface.add_address_secondary(line[8])
+
+        if len(line) > 4 and line[1] == "security" and line[3] == "security-zone":
+
+            if srx_config.check_zone(line[4]) is False:
+                zone = SECZone(line[4])
+                srx_config.append_zone(zone)
+                if len(line) > 5:
+                    if line[5] == "interfaces":
+                        zone.add_interface(line[6])
+            else:
+                if len(line) > 5:
+                    if line[5] == "interfaces":
+                        if zone.check_interface(line[6]) is False:
+                            zone.add_interface(line[6])
 
     return srx_config
