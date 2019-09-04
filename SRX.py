@@ -4,8 +4,11 @@ class SRXConfig:
         self.version = None
         self.interfaces = []
         self.zones = []
+        self.address_book = {}
+        self.address_book['global_addresses'] = None
+        self.address_book['global_applications'] = None
 
-    # 1 # INTERFACES #
+    # 1 # INTERFACES BRANCH #
 
     def append_interface(self, interface_object):
         self.interfaces.append(interface_object)
@@ -43,7 +46,7 @@ class SRXConfig:
             # print("  RETURNING FALSE 2 ")
             return False
 
-    # 2 # SECURITY ZONES #
+    # 2 # SECURITY ZONES BRANCH #
 
     def append_zone(self, zone_name):
         self.zones.append(zone_name)
@@ -66,6 +69,13 @@ class SRXConfig:
                 return False
         else:
             return False
+
+    # X # ADDRESS BOOK BRANCH #
+
+    # X.X # GLOBAL ADDRESS BOOK BRANCH
+
+    def append_global(self):
+        self.address_book["global"] = None
 
 
 class Interface:
@@ -118,12 +128,31 @@ class SECZone:
             return False
 
 
+class GlobalAddress:
+    def __init__(self):
+        self.name = "global"
+        self.addresses = {}
+
+    def add_address(self, key, value):
+        self.address[key] = value
+
+    def check_address(self, input_key):
+        for key in self.address:
+            if key == input_key:
+                return True
+        else:
+            return False
+
+
 srx_config = SRXConfig()
 
 
 def run(config):
 
     for row in config:
+
+        # 0 # SANITIZE THE CONFIGURATION FOR PARSING
+
         rm_nl = row.replace("\n", "")
         line = rm_nl.split(" ")
 
@@ -136,6 +165,8 @@ def run(config):
 
         if len(line) < 2:
             continue
+
+        # 1 # EXTRACT INTERFACE INFORMATION
 
         if line[1] == "interfaces":
 
@@ -202,6 +233,8 @@ def run(config):
                     else:
                         interface.add_address_secondary(line[8])
 
+        # 2 # EXTRACT ZONE INFORMATION
+
         if len(line) > 4 and line[1] == "security" and line[3] == "security-zone":
 
             if srx_config.check_zone(line[4]) is False:
@@ -215,5 +248,11 @@ def run(config):
                     if line[5] == "interfaces":
                         if zone.check_interface(line[6]) is False:
                             zone.add_interface(line[6])
+
+        # 3 # EXTRACT GLOBAL ADDRESSES INFORMATION
+
+        if len(line) > 6 and line[2] == "address-book" and line[3] == "global":
+
+
 
     return srx_config
