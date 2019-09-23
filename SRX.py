@@ -227,7 +227,7 @@ def run(config):
 
         # 2 # EXTRACT ADDRESS INFORMATION FROM SECURITY ZONES
 
-        if len(line) > 7 and line[5] == "address-book" and line[6] == "address":
+        if len(line) > 7 and line[2] == "zones" and line[5] == "address-book" and line[6] == "address":
 
             if srx_config.check_address_book(line[4]) is False:
                 address_book = AddressBook(line[4], "network")
@@ -236,6 +236,7 @@ def run(config):
         # 3 # EXTRACT ZONE INTERFACE INFORMATION
 
         if len(line) > 4 and line[1] == "security" and line[3] == "security-zone":
+
             if srx_config.check_zone(line[4]) is False:
                 zone = SECZone(line[4])
                 srx_config.append_zone(zone)
