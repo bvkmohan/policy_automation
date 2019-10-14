@@ -5,6 +5,8 @@ class SRXConfig:
         self.interfaces = []
         self.zones = []
         self.address_book = {}
+        self.address_book['networks'] = {}
+        self.address_book['applications'] = {}
         # self.address_book["global_addresses"] = None
         # self.address_book["global_applications"] = None
 
@@ -70,14 +72,14 @@ class SRXConfig:
         else:
             return False
 
-    # X # ADDRESS BOOK BRANCH #
+    # 3 # ADDRESS BOOK BRANCH #
 
     def append_address_book(self, book_name, address_list):
         self.address_book[book_name] = address_list
 
     # def dump_address_book
 
-    def check_address_book(self, book_name):
+    def check_address_book(self, book_name,):
         if len(self.address_book) > 0:
             for name in self.address_book:
                 if name == book_name:
@@ -225,11 +227,13 @@ def run(config):
                     else:
                         interface.add_address_secondary(line[8])
 
-        # 2 # EXTRACT ADDRESS INFORMATION FROM SECURITY ZONES
+        # 2 # EXTRACT ADDRESS INFORMATION
 
-        if len(line) > 7 and line[2] == "zones" and line[5] == "address-book" and line[6] == "address":
+        # 2.1 # FROM GLOBAL, IF EXISTS
 
-            if srx_config.check_address_book(line[4]) is False:
+        if len(line) > 6 and line[2] == "address-book" and line[3] == "global" and line[4] == "address":
+
+            if srx_config.check_address_book(line[5],"networks") is False:
                 address_book = AddressBook(line[4], "network")
                 srx_config.append_address_book(
 
@@ -248,7 +252,5 @@ def run(config):
                     if line[5] == "interfaces":
                         if zone.check_interface(line[6]) is False:
                             zone.add_interface(line[6])
-
-        # 3 # EXTRACT GLOBAL ADDRESSES INFORMATION
 
     return srx_config
