@@ -77,7 +77,17 @@ class SRXConfig:
     def append_address_book(self, book_entry, entry_type):
         self.address_book[entry_type].append(book_entry)
 
-    # def dump_address_book
+    def dump_address_book(self, what_in_book):
+        print(" ")
+        if what_in_book == "networks":
+            for network in self.address_book["networks"]:
+                print(" --- ")
+                print(" Name : " + network.key)
+                print(" Type : " + network.type)
+                for element in network.values:
+                    print("    " + element)
+        if what_in_book == "applications":
+            pass
 
     def check_address_book(self, given_name, name_type):
         if len(self.address_book[name_type]) > 0:
@@ -141,13 +151,17 @@ class SECZone:
 
 
 class AddressBook:
-    def __init__(self, name, value, name_type):
-        self.name = name
-        self.name_type = name_type
-        if self.name_type == "network":
-            self.network = str(value).split("/")[0]
-            self.mask = str(value).split("/")[1]
-            self.end = None
+    def __init__(self, value_key, value, value_type):
+        self.key = value_key
+        self.type = value_type
+        self.values = []
+        if self.type == "address":
+            self.values.append(value)
+        if self.type == "range":
+            self.values.append(value.split("-")[0])
+            self.values.append(value.split("-")[1])
+        if self.type == "fqdn":
+            self.values.append(value)
 
 
 srx_config = SRXConfig()
@@ -244,10 +258,22 @@ def run(config):
         # 2.1 # FROM GLOBAL, IF EXISTS
 
         if len(line) > 6 and line[3] == "global" and line[4] == "address":
-
+            if line[6] == "description":
+                continue
             if len(line) == 7:
                 if srx_config.check_address_book(line[5], "networks") is False:
-                    book_entry = AddressBook(line[5], line[6], "network")
+                    book_entry = AddressBook(line[5], line[6], "address")
+                    srx_config.append_address_book(book_entry, "networks")
+                    continue
+            if line[6] == "range-address":
+                if srx_config.check_address_book(line[5], "networks") is False:
+                    book_entry = AddressBook(
+                        line[5], str(line[7]) + "-" + str(line[9]), "range"
+                    )
+                    srx_config.append_address_book(book_entry, "networks")
+            if line[6] == "dns-name":
+                if srx_config.check_address_book(line[5], "networks") is False:
+                    book_entry = AddressBook(line[5], line[7], "fqdn")
                     srx_config.append_address_book(book_entry, "networks")
 
         # 3 # EXTRACT ZONE INTERFACE INFORMATION
