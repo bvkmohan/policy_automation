@@ -93,7 +93,7 @@ class SRXConfig:
     def check_address_book(self, given_name, name_type):
         if len(self.address_book[name_type]) > 0:
             for entry_name in self.address_book[name_type]:
-                if entry_name == given_name:
+                if entry_name.key == given_name:
                     return True
             else:
                 return False
@@ -157,13 +157,16 @@ class AddressBook:
         self.type = value_type
         self.scope = scope
         self.values = []
-        if self.type == "address":
+        if self.type == "address" or self.type == "address-set":
             self.values.append(value)
         if self.type == "range":
             self.values.append(value.split("-")[0])
             self.values.append(value.split("-")[1])
         if self.type == "fqdn":
             self.values.append(value)
+    
+    def append_address(self, value):
+        self.values.append(value)
 
 
 srx_config = SRXConfig()
@@ -273,10 +276,24 @@ def run(config):
                         line[5], str(line[7]) + "-" + str(line[9]), line[3], "range"
                     )
                     srx_config.append_address_book(book_entry, "networks")
+                    continue
             if line[6] == "dns-name":
                 if srx_config.check_address_book(line[5], "networks") is False:
                     book_entry = AddressBook(line[5], line[7], line[3], "fqdn")
                     srx_config.append_address_book(book_entry, "networks")
+                    continue
+        if len(line) > 7 and line[3] == "global" and line[4] == "address-set":
+            if line[6] == "description":
+                continue
+            if line[6] == "address":
+                if srx_config.check_address_book(line[5], "networks") is False:
+                    book_entry = AddressBook(line[5], line[7], line[3], "address-set")
+                    srx_config.append_address_book(book_entry, "networks")
+                    continue
+                else:
+                    book_entry.append_address(line[7])
+                    continue
+
 
         # 3 # EXTRACT ZONE INTERFACE INFORMATION
 
